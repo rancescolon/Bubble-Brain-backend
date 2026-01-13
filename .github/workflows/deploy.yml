@@ -1,0 +1,35 @@
+name: Deploy Backend
+
+on:
+  push:
+    branches: [ "main" ]  # Runs when you push to main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy Backend via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.DO_HOST }}
+          username: ${{ secrets.DO_USERNAME }}
+          key: ${{ secrets.DO_SSH_KEY }}
+          script: |
+            echo "🚀 Deploying Backend..."
+            
+            # 1. Go to backend folder
+            cd ~/Bubble-Brain-backend
+            
+            # 2. Get latest code
+            git fetch --all
+            git reset --hard origin/main
+            
+            # 3. Install & Build
+            npm install
+            npm run build
+            
+            # 4. Restart Server
+            pm2 restart bubble-api
+            pm2 save
+            
+            echo "✅ Backend Deployed Successfully!"
